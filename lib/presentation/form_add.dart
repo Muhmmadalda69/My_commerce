@@ -159,7 +159,7 @@ class _FormAdd extends State<FormAdd> {
               onPressed: () {
                 myAlert();
               },
-              child: const Text('Upload Photo'),
+              child: const Text('UPLOAD GAMBAR'),
             ),
             const SizedBox(
               height: 7,
@@ -186,7 +186,7 @@ class _FormAdd extends State<FormAdd> {
                   _uploadData(_namaBarang, image);
                   Navigator.of(context).pop();
                 },
-                child: const Text('Submit'),
+                child: const Text('SUBMIT'),
               ),
             )
           ],
