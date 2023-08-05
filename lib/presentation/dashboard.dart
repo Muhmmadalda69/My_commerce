@@ -14,9 +14,9 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   String _searchQuery = ''; // Teks pencarian
   bool _isSearchActive = false;
-  List<Map<String, dynamic>> _searchResults = [];
-  TextEditingController _searchTextController = TextEditingController();
-  FocusNode _searchFocusNode = FocusNode();
+  final List<Map<String, dynamic>> _searchResults = [];
+  final TextEditingController _searchTextController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void dispose() {
@@ -105,7 +105,7 @@ class _DashboardState extends State<Dashboard> {
                           ? _searchResults.length
                           : snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
-                        var data;
+                        Map<String, dynamic> data;
                         if (_isSearchActive) {
                           data = _searchResults[index];
                         } else {
@@ -113,6 +113,14 @@ class _DashboardState extends State<Dashboard> {
                               as Map<String, dynamic>;
                         }
                         var documentId = snapshot.data!.docs[index].id;
+
+                        // Tampilkan CircularProgressIndicator saat gambar dimuat
+                        if (data['image_path'] == null ||
+                            data['image_path'].isEmpty) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
                         // Filter data berdasarkan teks pencarian
                         if (_searchQuery.isNotEmpty &&
                             !data['nama_barang']
@@ -163,8 +171,20 @@ class _DashboardState extends State<Dashboard> {
                                 borderRadius: BorderRadius.circular(10),
 
                                 // ignore: sort_child_properties_last
-                                child: Image.network(data['image_path'],
-                                    fit: BoxFit.cover),
+                                child: Image.network(
+                                  data['image_path'],
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child;
+                                    } else {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+                                  },
+                                ),
                               ),
                             ),
                           ),
@@ -222,6 +242,7 @@ class _DashboardState extends State<Dashboard> {
                   final docSnapshot = await docRef.get();
                   final data = docSnapshot.data();
                   _deleteData(documentId, data!['image_path']);
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(
                       context); // Tutup dialog setelah berhasil menghapus
                 },
@@ -235,7 +256,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Future<void> _deleteData(String documentId, String imagePath) async {
-    void _showSnackBar(String message) {
+    void showSnackBar(String message) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message)));
     }
@@ -253,9 +274,9 @@ class _DashboardState extends State<Dashboard> {
         await ref.delete();
       }
 
-      _showSnackBar("Data berhasil dihapus.");
+      showSnackBar("Data berhasil dihapus.");
     } catch (e) {
-      _showSnackBar("Gagal menghapus data: $e");
+      showSnackBar("Gagal menghapus data: $e");
     }
   }
 
@@ -266,8 +287,8 @@ class _DashboardState extends State<Dashboard> {
       var snapshot =
           FirebaseFirestore.instance.collection('barang').snapshots();
       snapshot.forEach((querySnapshot) {
-        querySnapshot.docs.forEach((doc) {
-          var data = doc.data() as Map<String, dynamic>;
+        for (var doc in querySnapshot.docs) {
+          var data = doc.data();
           if (data['nama_barang']
               .toLowerCase()
               .contains(_searchQuery.toLowerCase())) {
@@ -275,7 +296,7 @@ class _DashboardState extends State<Dashboard> {
               _searchResults.add(data);
             });
           }
-        });
+        }
       });
     }
 
