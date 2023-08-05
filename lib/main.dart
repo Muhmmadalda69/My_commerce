@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:my_commerce/presentation/dashboard.dart';
+import 'package:my_commerce/splash_screen.dart';
 
 import 'firebase_options.dart';
 
@@ -19,21 +19,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.light(primary: Colors.blue),
-          appBarTheme: const AppBarTheme(
-            color: Colors.blue,
-            titleTextStyle: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-            iconTheme: IconThemeData(
-              color: Colors.white,
-            ),
+      title: 'My Commerce',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: const ColorScheme.light(primary: Colors.blue),
+        appBarTheme: const AppBarTheme(
+          color: Colors.blue,
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+          iconTheme: IconThemeData(
+            color: Colors.white,
           ),
         ),
-        home: const Dashboard());
+      ),
+      home: const SplashScreen(),
+    );
   }
 }
