@@ -12,6 +12,19 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
+  String _searchQuery = ''; // Teks pencarian
+  bool _isSearchActive = false;
+  List<Map<String, dynamic>> _searchResults = [];
+  TextEditingController _searchTextController = TextEditingController();
+  FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _searchTextController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,74 +36,148 @@ class _DashboardState extends State<Dashboard> {
       ),
       body: Container(
         margin: const EdgeInsets.only(top: 20, right: 20, left: 20),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('barang').snapshots(),
-          builder: (BuildContext context,
-              AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
-            if (snapshot.hasData) {
-              return GridView.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  crossAxisSpacing: 15,
-                  mainAxisSpacing: 15,
-                  maxCrossAxisExtent: 200,
-                ),
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  var data =
-                      snapshot.data!.docs[index].data() as Map<String, dynamic>;
-                  var documentId = snapshot.data!.docs[index].id;
-                  return InkWell(
-                    onTap: () {
-                      // Tampilkan dialog opsi ketika long-press terdeteksi
-                      _showOptionsDialog(documentId);
-                    },
-                    child: Card(
-                      shape: const RoundedRectangleBorder(
-                        side: BorderSide(
-                          color: Colors.blue,
-                          width: 4,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                      child: GridTile(
-                        footer: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(10),
-                              bottomRight: Radius.circular(10),
-                            ),
-                          ),
-                          height: 30,
-                          padding: const EdgeInsets.all(6),
-                          // color: const Color.fromARGB(255, 33, 149, 243),
-                          child: Text(
-                            data['nama_barang'],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                          // Tambahkan logic untuk mengedit atau menghapus data jika diperlukan
-                          // ...
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-
-                          // ignore: sort_child_properties_last
-                          child: Image.network(data['image_path'],
-                              fit: BoxFit.cover),
-                        ),
-                      ),
-                    ),
-                  );
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                    _isSearchActive = value.isNotEmpty;
+                  });
+                  _performSearch();
+                  _sortSearchResults(); // Urutkan hasil pencarian
                 },
-              );
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          },
+                onSubmitted: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                  _performSearch();
+                  _sortSearchResults(); // Urutkan hasil pencarian
+                },
+                focusNode: _isSearchActive ? _searchFocusNode : null,
+                controller: _searchTextController,
+                decoration: InputDecoration(
+                  labelText: 'Search',
+                  prefixIcon: const Icon(Icons.search),
+                  contentPadding: const EdgeInsets.all(15),
+                  prefixIconColor: Colors.blue,
+                  suffixIcon: _isSearchActive
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = '';
+                              _isSearchActive = false;
+                            });
+                            _searchFocusNode.unfocus();
+                            _searchTextController.clear();
+                          },
+                        )
+                      : null,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance.collection('barang').snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot<Object?>> snapshot) {
+                  if (snapshot.hasData) {
+                    return GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        crossAxisSpacing: 15,
+                        mainAxisSpacing: 15,
+                        maxCrossAxisExtent: 200,
+                      ),
+                      itemCount: _isSearchActive
+                          ? _searchResults.length
+                          : snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        var data;
+                        if (_isSearchActive) {
+                          data = _searchResults[index];
+                        } else {
+                          data = snapshot.data!.docs[index].data()
+                              as Map<String, dynamic>;
+                        }
+                        var documentId = snapshot.data!.docs[index].id;
+                        // Filter data berdasarkan teks pencarian
+                        if (_searchQuery.isNotEmpty &&
+                            !data['nama_barang']
+                                .toLowerCase()
+                                .contains(_searchQuery.toLowerCase())) {
+                          return Container(); // Tampilkan Container kosong jika data tidak sesuai dengan pencarian
+                        }
+
+                        // Tampilkan data jika sesuai dengan pencarian atau pencarian kosong
+                        return InkWell(
+                          onTap: () {
+                            // Tampilkan dialog opsi ketika long-press terdeteksi
+                            _showOptionsDialog(documentId);
+                          },
+                          child: Card(
+                            shape: const RoundedRectangleBorder(
+                              side: BorderSide(
+                                color: Colors.blue,
+                                width: 4,
+                              ),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12)),
+                            ),
+                            child: GridTile(
+                              footer: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(10),
+                                    bottomRight: Radius.circular(10),
+                                  ),
+                                ),
+                                height: 30,
+                                padding: const EdgeInsets.all(6),
+                                // color: const Color.fromARGB(255, 33, 149, 243),
+                                child: Text(
+                                  data['nama_barang'],
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                // Tambahkan logic untuk mengedit atau menghapus data jika diperlukan
+                                // ...
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+
+                                // ignore: sort_child_properties_last
+                                child: Image.network(data['image_path'],
+                                    fit: BoxFit.cover),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -170,5 +257,60 @@ class _DashboardState extends State<Dashboard> {
     } catch (e) {
       _showSnackBar("Gagal menghapus data: $e");
     }
+  }
+
+  void _performSearch() {
+    _searchResults.clear();
+
+    if (_searchQuery.isNotEmpty) {
+      var snapshot =
+          FirebaseFirestore.instance.collection('barang').snapshots();
+      snapshot.forEach((querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          var data = doc.data() as Map<String, dynamic>;
+          if (data['nama_barang']
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase())) {
+            setState(() {
+              _searchResults.add(data);
+            });
+          }
+        });
+      });
+    }
+
+    setState(() {
+      _isSearchActive = _searchQuery.isNotEmpty;
+      if (!_isSearchActive) {
+        _searchResults
+            .clear(); // Menonaktifkan fitur search dan menghapus hasil pencarian
+      }
+    });
+  }
+
+  void _sortSearchResults() {
+    _searchResults.sort((a, b) {
+      var aContainsQuery =
+          a['nama_barang'].toLowerCase().contains(_searchQuery.toLowerCase());
+      var bContainsQuery =
+          b['nama_barang'].toLowerCase().contains(_searchQuery.toLowerCase());
+
+      if (aContainsQuery && bContainsQuery) {
+        return a['nama_barang']
+            .toLowerCase()
+            .indexOf(_searchQuery.toLowerCase())
+            .compareTo(
+              b['nama_barang']
+                  .toLowerCase()
+                  .indexOf(_searchQuery.toLowerCase()),
+            );
+      } else if (aContainsQuery) {
+        return -1;
+      } else if (bContainsQuery) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
   }
 }

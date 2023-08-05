@@ -75,73 +75,77 @@ class _FormEditState extends State<FormEdit> {
         title: const Text('Edit Data'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 20, bottom: 10),
-              child: _imagePath.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          _imagePath,
-                          fit: BoxFit.cover,
-                          width: 150,
-                          height: 150,
+        child: Container(
+          margin: const EdgeInsets.only(top: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 20, bottom: 10),
+                child: _imagePath.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            _imagePath,
+                            fit: BoxFit.cover,
+                            width: 150,
+                            height: 150,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        margin: const EdgeInsets.only(top: 20, bottom: 10),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 40, horizontal: 30),
+                        color: Colors.blue[100],
+                        child: const Text(
+                          "No Image",
+                          style: TextStyle(fontSize: 20),
                         ),
                       ),
-                    )
-                  : Container(
-                      margin: const EdgeInsets.only(top: 20, bottom: 10),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 40, horizontal: 30),
-                      color: Colors.blue[100],
-                      child: const Text(
-                        "No Image",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                myAlert();
-              },
-              child: const Text('UPLOAD GAMBAR'),
-            ),
-            const SizedBox(
-              height: 7,
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    _namaBarang = value;
-                  });
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  myAlert();
                 },
-                // Isi teks dari Firestore
-                controller: TextEditingController(text: _namaBarang),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(10),
-                  hintText: 'MASUKAN NAMA BARANG',
+                child: const Text('UPLOAD GAMBAR'),
+              ),
+              const SizedBox(
+                height: 7,
+              ),
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _namaBarang = value;
+                    });
+                  },
+                  // Isi teks dari Firestore
+                  controller: TextEditingController(text: _namaBarang),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(10),
+                    hintText: 'MASUKAN NAMA BARANG',
+                  ),
                 ),
               ),
-            ),
-            // ignore: avoid_unnecessary_containers
-            Container(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Panggil fungsi untuk mengirim data ke Firestore
-                  _uploadData(widget.documentId, _namaBarang, image);
-                  Navigator.of(context).pop();
-                },
-                child: const Text('EDIT'),
+              // ignore: avoid_unnecessary_containers
+              Container(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Panggil fungsi untuk mengirim data ke Firestore
+                    _uploadData(widget.documentId, _namaBarang, image);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('EDIT'),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -126,70 +126,74 @@ class _FormAdd extends State<FormAdd> {
         ),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            //if image not null show the image
-            //if image null show text
-            image != null
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(
-                        //to show image, you type like this.
-                        File(image!.path),
-                        fit: BoxFit.cover,
-                        width: 150,
-                        height: 150,
+        child: Container(
+          margin: const EdgeInsets.only(top: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              //if image not null show the image
+              //if image null show text
+              image != null
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          //to show image, you type like this.
+                          File(image!.path),
+                          fit: BoxFit.cover,
+                          width: 150,
+                          height: 150,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      margin: const EdgeInsets.only(top: 20, bottom: 10),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 40, horizontal: 30),
+                      color: Colors.blue[100],
+                      child: const Text(
+                        "No Image",
+                        style: TextStyle(fontSize: 20),
                       ),
                     ),
-                  )
-                : Container(
-                    margin: const EdgeInsets.only(top: 20, bottom: 10),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 40, horizontal: 30),
-                    color: Colors.blue[100],
-                    child: const Text(
-                      "No Image",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ),
-            ElevatedButton(
-              onPressed: () {
-                myAlert();
-              },
-              child: const Text('UPLOAD GAMBAR'),
-            ),
-            const SizedBox(
-              height: 7,
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-              child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    _namaBarang = value;
-                  });
+              ElevatedButton(
+                onPressed: () {
+                  myAlert();
                 },
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(10),
-                  hintText: 'MASUKAN NAMA BARANG',
+                child: const Text('UPLOAD GAMBAR'),
+              ),
+              const SizedBox(
+                height: 7,
+              ),
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      _namaBarang = value;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(10),
+                    hintText: 'MASUKAN NAMA BARANG',
+                  ),
                 ),
               ),
-            ),
-            Container(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Panggil fungsi untuk mengirim data ke Firestore
-                  _uploadData(_namaBarang, image);
-                  Navigator.of(context).pop();
-                },
-                child: const Text('SUBMIT'),
-              ),
-            )
-          ],
+              Container(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Panggil fungsi untuk mengirim data ke Firestore
+                    _uploadData(_namaBarang, image);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('SUBMIT'),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
