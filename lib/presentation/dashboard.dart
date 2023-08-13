@@ -133,14 +133,15 @@ class _DashboardState extends State<Dashboard> {
                         return InkWell(
                           onTap: () {
                             // Tampilkan dialog opsi ketika long-press terdeteksi
-                            _showOptionsDialog(documentId);
+                            _showOptionsDialog(documentId, data['nama_barang']);
                           },
                           child: Card(
+                            shadowColor: Colors.black,
                             shape: const RoundedRectangleBorder(
-                              side: BorderSide(
-                                color: Colors.blue,
-                                width: 4,
-                              ),
+                              // side: BorderSide(
+                              //   color: Colors.blue,
+                              //   width: 4,
+                              // ),
                               borderRadius:
                                   BorderRadius.all(Radius.circular(12)),
                             ),
@@ -184,6 +185,12 @@ class _DashboardState extends State<Dashboard> {
                                       );
                                     }
                                   },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // Menampilkan widget atau pesan yang sesuai jika terjadi error
+                                    return const Center(
+                                      child: Text('Gagal memuat gambar'),
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -213,12 +220,12 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  void _showOptionsDialog(String documentId) {
+  void _showOptionsDialog(String documentId, String namaBarang) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Opsi"),
+          title: Text(namaBarang),
           content: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
